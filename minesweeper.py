@@ -3,6 +3,16 @@ import random
 harta = {}
 harta_activa = {}
 
+class Box:
+    def __init__(self, rand = 0, coloana = 0, vecini = [], tipul = ""):
+        self.rand = rand
+        self.coloana = coloana
+        self.vecini = vecini
+        self.tipul = tipul
+
+    def __repr__(self):
+        return "Rand: {rand}, Coloana: {coloana}, Tipul: {tipul}".format(rand = self.rand, coloana = self.coloana, tipul = self.tipul)
+
 class Joc:
     numar_joc = 0
     lista_pozitii_bombe = []
@@ -22,26 +32,26 @@ class Joc:
 
     def generare_harta(self):
         for i in range(1, self.numar_randuri + 1):
-            harta[i] = [" " for coloana in range(self.numar_coloane)]
+            harta[i] = [Box(i, coloana + 1) for coloana in range(self.numar_coloane)]
 
     def generare_harta_activa(self):
         for i in range(1, self.numar_randuri + 1):
-            harta_activa[i] = [" " for coloana in range(self.numar_coloane)]
+            harta_activa[i] = [Box(i, coloana + 1) for coloana in range(self.numar_coloane)]
 
     def distribuire_bombe(self):
-        poz_rand = list(harta.keys())
-        poz_coloana = list(range(1, self.numar_coloane + 1))
-        pozitii_tabel = []
-        for key in poz_rand:
-            for coloana in poz_coloana:
-                pozitii_tabel.append((key, coloana))
+        all_boxes = harta.values()
         selectii_random = []
+        all_boxes = list(harta.values())
+        all_boxes_list = []
+        for lista in all_boxes:
+            for box in lista:
+                all_boxes_list.append(box)
         while len(selectii_random) < self.numar_bombe:
-            selectie_random = random.choice(pozitii_tabel)
+            selectie_random = random.choice(all_boxes_list)
             if selectie_random not in selectii_random:
                 selectii_random.append(selectie_random)
-        for pozitie in selectii_random:
-            harta[pozitie[0]][pozitie[1]-1] = "X"
+        for selectie in selectii_random:
+            harta[selectie.rand][selectie.coloana-1].tipul = "X"
     
     def vezi_harta(self):
         first_row = "   "
@@ -73,7 +83,7 @@ class Joc:
                 rand_nou = rand_nou[:3] + rand_nou[4:]
             print(rand_nou)
 
-    def selectie(self, randul=0, coloana=0):
+    def verifica_vecini(self, randul=0, coloana=0):
         randul = int(input("Introduceti randul: "))
         coloana = int(input("Introduceti coloana: ")) - 1
         lista_vecini = []
@@ -113,10 +123,15 @@ class Joc:
                 lista_vecini.append(harta[randul+1][coloana+1])
             except (IndexError, KeyError):
                 pass
+        return (lista_vecini, randul, coloana)
+
+    def selectie(self, randul=0, coloana=0):
+        lista_vecini, randul, coloana = self.verifica_vecini()
         if lista_vecini.count("X") == 0:
             harta[randul][coloana] = "O"
             harta_activa[randul][coloana] = "O"
             Joc.count_choice += 1
+
         else:
             harta[randul][coloana] = lista_vecini.count("X")
             harta_activa[randul][coloana] = lista_vecini.count("X")
@@ -130,15 +145,14 @@ def start_joc():
         joc_1.selectie()
         joc_1.vezi_harta_activa()
 
-joc_1 = Joc(10, 10, 15, "Mihai")
+joc_1 = Joc(10, 10, 30, "Mihai")
 
 print(joc_1)
 joc_1.generare_harta()
-joc_1.generare_harta_activa()
+# joc_1.generare_harta_activa()
 joc_1.distribuire_bombe()
 print(harta)
-#joc_1.vezi_harta_activa()
-print(harta_activa)
-joc_1.vezi_harta_activa()
-
-start_joc()
+# #joc_1.vezi_harta_activa()
+# print(harta_activa)
+# joc_1.vezi_harta_activa()
+# start_joc()
