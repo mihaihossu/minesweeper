@@ -1,24 +1,24 @@
-from itertools import count
+
 import random
 
 harta = {}
 harta_activa = {}
 
 class Box:
-    def __init__(self, rand = 0, coloana = 0, vecini = [], tipul = " "):
+    def __init__(self, rand = 0, coloana = 0, vecini = None, tipul = " "):
         self.rand = rand
         self.coloana = coloana
-        self.vecini = vecini
+        self.vecini = [] if vecini is None else vecini
         self.tipul = tipul
 
     def __repr__(self):
         return "Rand: {rand}, Coloana: {coloana}, Tipul: {tipul}, Vecini: {vecini}".format(rand = self.rand, coloana = self.coloana, tipul = self.tipul, vecini = self.vecini)
 
     def determina_tipul_box_selectat(self):
-        self.determina_vecini()
         if self.tipul == "X":
             pass
         else:
+            self.determina_vecinii()
             self.tipul = self.count_bombs()
 
     def count_bombs(self):
@@ -28,12 +28,26 @@ class Box:
                 counter_bombs += 1
         return counter_bombs
 
-    def determina_vecini(self):
-        if self.rand == 1 and self.coloana == 1:
-            self.vecini += [harta[1][1], harta[2][0], harta[2][1]]
-        if self.rand == 1 and self.coloana == joc_1.numar_coloane:
-            self.vecini += [harta[1][self.coloana-2], harta[2][self.coloana-2], harta[2][self.coloana-1]]
-
+    def determina_vecinii(self):
+        if self.coloana in range(2, joc_1.numar_coloane) and self.rand in range(2, joc_1.numar_randuri):
+            self.vecini += [harta[self.rand-1][self.coloana-2], harta[self.rand-1][self.coloana-1], harta[self.rand-1][self.coloana], harta[self.rand][self.coloana-2], harta[self.rand][self.coloana], harta[self.rand+1][self.coloana-2], harta[self.rand+1][self.coloana-1], harta[self.rand+1][self.coloana]]
+        else:
+            if self.rand == 1 and self.coloana == 1:
+                self.vecini += [harta[1][1], harta[2][0], harta[2][1]]
+            if self.rand == 1 and self.coloana == joc_1.numar_coloane:
+                self.vecini += [harta[1][self.coloana-2], harta[2][self.coloana-2], harta[2][self.coloana-1]]
+            if self.rand == joc_1.numar_randuri and self.coloana == 1:
+                self.vecini += [harta[self.rand-1][self.coloana-1], harta[self.rand-1][self.coloana], harta[self.rand][self.coloana]]
+            if self.rand == joc_1.numar_randuri and self.coloana == joc_1.numar_coloane:
+                self.vecini += [harta[self.rand-1][self.coloana-1], harta[self.rand-1][self.coloana-2], harta[self.rand][self.coloana-2]]
+            if self.rand == 1 and self.coloana in range(2, joc_1.numar_coloane):
+                self.vecini += [harta[self.rand][self.coloana-2], harta[self.rand][self.coloana], harta[self.rand+1][self.coloana-2], harta[self.rand+1][self.coloana-1], harta[self.rand+1][self.coloana]]
+            if self.rand == joc_1.numar_randuri and self.coloana in range(2, joc_1.numar_coloane):
+                self.vecini += [harta[self.rand][self.coloana-2], harta[self.rand][self.coloana], harta[self.rand-1][self.coloana-2], harta[self.rand-1][self.coloana-1], harta[self.rand-1][self.coloana]]
+            if self.coloana == 1 and self.rand in range(2, joc_1.numar_randuri):
+                self.vecini += [harta[self.rand-1][self.coloana-1], harta[self.rand-1][self.coloana], harta[self.rand][self.coloana], harta[self.rand+1][self.coloana-1], harta[self.rand+1][self.coloana]]
+            if self.coloana == joc_1.numar_coloane and self.rand in range(2, joc_1.numar_randuri):
+                self.vecini += [harta[self.rand-1][self.coloana-1], harta[self.rand-1][self.coloana-2], harta[self.rand][self.coloana-2], harta[self.rand+1][self.coloana-2], harta[self.rand+1][self.coloana-1]]
 
 
 class Joc:
@@ -105,16 +119,15 @@ class Joc:
             for box in lista:
                 all_boxes_list.append(box)
         for box in all_boxes_list:
-            box.rand += 1
-            print(box)
-        print(all_boxes_list)
+            box.determina_tipul_box_selectat()
 
-joc_1 = Joc(3, 3, 3, "Mihai")
+
+joc_1 = Joc(10, 10, 30, "Mihai")
 print(joc_1)
 joc_1.generare_harta()
 # joc_1.generare_harta_activa()
 joc_1.distribuire_bombe()
 # print(harta)
-
 joc_1.vezi_harta()
 joc_1.populeaza_harta()
+joc_1.vezi_harta()
