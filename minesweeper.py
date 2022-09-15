@@ -105,12 +105,72 @@ class Joc:
             print(rand_nou)
 
     def vezi_harta_activa(self):
-        pass
+        first_row = "   "
+        for coloana in range(1, self.numar_coloane + 1):
+            first_row += " {coloana} |".format(coloana=coloana)
+        print(first_row)
+        nr_coloane = ""
+        for num in range(1, self.numar_randuri + 1):
+            rand_nou = ""
+            rand_nou += " {rand} ".format(rand = num)
+            for coloana in range(1, self.numar_coloane + 1):
+                rand_nou += " {} |".format(harta_activa[num][coloana-1].tipul)
+            if num > 9:
+                rand_nou = rand_nou[:3] + rand_nou[4:]
+            print(rand_nou)
 
     def selectie(self):
-        input_rand = int(input("Introduceti randul: "))
-        input_coloana = int(input("Introduceti coloana: ")) - 1
+        while joc_1.count_choice < joc_1.numar_coloane * joc_1.numar_randuri:
+            print("TYPE \"F\" TO FLAG A BOMB || PRESS ENTER TO REVEAL A CLUE")
+            input_selectie = input("")
+            if input_selectie == "F":
+                self.flag_a_bomb()
+            else:
+                input_rand = input("Introduceti randul: ")
+                input_coloana = input("Introduceti coloana: ")
+                self.reveal_clue(input_rand, input_coloana)
+            all_boxes = []
+            for lista in harta_activa.values():
+                for box in lista:
+                    if box.tipul is not " ":
+                        all_boxes.append(box)
+            if len(all_boxes) == joc_1.numar_coloane * joc_1.numar_randuri:
+                print("FELICITARI {}, AI FINALIZAT JOCUL!".format(joc_1.denumire_jucator.upper()))
+                exit()
+
+    def flag_a_bomb(self):
+        input_rand_bomba = int(input("Introduceti randul pentru semnalizare bomba: "))
+        input_coloana_bomba = int(input("Introduceti coloana pentru semnalizare bomba: ")) - 1
+        harta_activa[input_rand_bomba][input_coloana_bomba].tipul = "#"
+        joc_1.count_choice += 1
+        joc_1.vezi_harta_activa()
+
+    def reveal_clue(self, input_rand, input_coloana):
+        input_rand = int(input_rand)
+        input_coloana = int(input_coloana) - 1
         box_selectat = harta[input_rand][input_coloana]
+        if box_selectat.tipul == "X":
+            joc_1.vezi_harta()
+            print("GAME OVER")
+            exit()
+        else:
+            if box_selectat.tipul == 0:
+                harta_activa[input_rand][input_coloana] = box_selectat
+                joc_1.count_choice += 1
+                lista_vecini_zero = [box_selectat]
+                for box in lista_vecini_zero:
+                    for vecin in box.vecini:
+                        if vecin.tipul == 0 and vecin not in lista_vecini_zero:
+                            lista_vecini_zero.append(vecin)
+                            harta_activa[vecin.rand][vecin.coloana-1] = vecin
+                            for vecin_vecin in vecin.vecini:
+                                harta_activa[vecin_vecin.rand][vecin_vecin.coloana-1] = vecin_vecin
+                            joc_1.count_choice += 1
+                joc_1.vezi_harta_activa()
+            else:
+                harta_activa[input_rand][input_coloana] = box_selectat
+                joc_1.count_choice += 1
+                joc_1.vezi_harta_activa()
 
     def populeaza_harta(self):
         all_boxes = list(harta.values())
@@ -121,13 +181,24 @@ class Joc:
         for box in all_boxes_list:
             box.determina_tipul_box_selectat()
 
+def initiere_joc():
+    print("""
+    WELCOME TO MINESWEEPER
+    ----------------------
+    
+    """)
+    nr_randuri = int(input("Numar randuri: "))
+    nr_coloane = int(input("Numar coloane: "))
+    max_nr_bombe = nr_randuri * nr_coloane  
+    nr_recomandat_bombe = int(max_nr_bombe * 0.10)
+    nr_bombe = int(input("Numar bombe (max {max}, recomandat {rec}): ".format(max = max_nr_bombe, rec = nr_recomandat_bombe)))
+    denumire_jucator = input("Nume jucator: ")
+    return Joc(nr_coloane, nr_randuri, nr_bombe, denumire_jucator)
 
-joc_1 = Joc(10, 10, 30, "Mihai")
-print(joc_1)
+joc_1 = initiere_joc()  
 joc_1.generare_harta()
-# joc_1.generare_harta_activa()
+joc_1.generare_harta_activa()
 joc_1.distribuire_bombe()
-# print(harta)
-joc_1.vezi_harta()
 joc_1.populeaza_harta()
-joc_1.vezi_harta()
+joc_1.vezi_harta_activa()
+joc_1.selectie()
